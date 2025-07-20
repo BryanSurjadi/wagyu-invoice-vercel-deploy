@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Invoice</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="/images/logo.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <img src="/images/logo.png" alt="Company Logo" class="logo">
+    </div>
+    <div class="header-right">
+      <h1>INVOICE FORM</h1>
+    </div>
+  </header>
+
+  <main class="container">
+    <form action="/generate/invoice" method="POST" enctype="application/x-www-form-urlencoded" target="_blank">
+      <div class="customer-info">
+        <div class="title">
+          <h2>Customer Info</h2>
+        </div>
+
+        <div class="input-customer-details">
+          <label>Invoice Number</label>
+          <input type="text" name="invoice_number" placeholder="01" required>
+
+          <label>Nama</label>
+          <input type="text" name="customer_name" placeholder="Baba" required>
+
+          <label>No. Telepon</label>
+          <input type="text" name="phone" placeholder="08123456789" required>
+
+          <label>Alamat</label>
+          <textarea name="address" rows="3" placeholder="Jl. Raya No. 1" required></textarea>
+
+          <label>Opsi Pengiriman</label>
+          <select id="opsi_pengiriman" name="opsi_pengiriman">
+            <option value="Gosend Sameday">Gosend Sameday</option>
+            <option value="Gosend Instant">Gosend Instant</option>
+            <option value="Paxel Sameday">Paxel Sameday</option>
+            <option value="Paxel Nextday">Paxel Nextday</option>
+          </select>
+
+          <label>Tanggal Pengiriman</label>
+          <input type="date" name="delivery_date">
+        </div>
+        
+      </div>
+      
+      <h2>Produk</h2>
+      <div id="products-container">
+        <div class="product-row">
+          <select name="product_name[]" class="product-select" required>
+            <option value="">-- Pilih Produk --</option>
+            <option value="Japanese Wagyu A5 Ribeye Steak Cut">Japanese Wagyu A5 Ribeye Steak Cut</option>
+            <option value="Japanese Wagyu A5 Ribeye Yakiniku Cut (200 gr)">Japanese Wagyu A5 Ribeye Yakiniku Cut (200 gr)</option>
+            <option value="Japanese Wagyu A5 Ribeye Yakiniku Cut (100 gr)">Japanese Wagyu A5 Ribeye Yakiniku Cut (100 gr)</option>
+            <option value="Japanese Wagyu A5 Ribeye Slice Cut (200 gr)">Japanese Wagyu A5 Ribeye Slice Cut (200 gr)</option>
+            <option value="Japanese Wagyu A5 Ribeye Slice Cut (100 gr)">Japanese Wagyu A5 Ribeye Slice Cut (100 gr)</option>
+
+            <option value="Japanese Wagyu A5 Sirloin Steak Cut">Japanese Wagyu A5 Sirloin Steak Cut</option>
+            <option value="Japanese Wagyu A5 Sirloin Yakiniku Cut (200 gr)">Japanese Wagyu A5 Sirloin Yakiniku Cut (200 gr)</option>
+            <option value="Japanese Wagyu A5 Sirloin Yakiniku Cut (100 gr)">Japanese Wagyu A5 Sirloin Yakiniku Cut (100 gr)</option>
+            <option value="Japanese Wagyu A5 Sirloin Slice Cut (200 gr)">Japanese Wagyu A5 Sirloin Slice Cut (200 gr)</option>
+            <option value="Japanese Wagyu A5 Sirloin Slice Cut (100 gr)">Japanese Wagyu A5 Sirloin Slice Cut (100 gr)</option>
+
+            <option value="Japanese Wagyu A5 Shortplate Slice Cut (200 gr)">Japanese Wagyu A5 Shortplate Slice Cut (200 gr)</option>
+            <option value="Japanese Wagyu A5 Shortplate Slice Cut (100 gr)">Japanese Wagyu A5 Shortplate Slice Cut (100 gr)</option>
+
+            <option value="Japanese Wagyu A5 Budget Bundle">Japanese Wagyu A5 Budget Bundle</option>
+            <option value="Japanese Wagyu A5 Slice Bundle">Japanese Wagyu A5 Slice Bundle</option>
+
+            <option value="Ongkir Sameday">Ongkir Sameday</option>
+            <option value="Ongkir Instant">Ongkir Instant</option>
+            <option value="Ongkir Nextday">Ongkir Nextday</option>
+          </select>
+          <input type="number" name="qty[]" placeholder="Qty" required>
+          <input type="number" name="price[]" placeholder="Harga Satuan" required>
+          <button type="button" onclick="removeRow(this)">Hapus</button>
+        </div>
+      </div>
+      <button type="button" onclick="addProductRow()">Tambah Produk</button>
+
+      <label>Nama Diskon</label>
+      <input type="text" name="discount_name" placeholder="Contoh: Promo Akhir Tahun">
+
+      <label>Jumlah Diskon (Rp)</label>
+      <input type="number" name="discount_amount" placeholder="Contoh: 50000">
+
+      <button type="submit">Generate Invoice PDF</button>
+    </form>
+  </main>
+
+  <script>
+    const productPrices = {
+      "Japanese Wagyu A5 Ribeye Yakiniku Cut (200 gr)": 660000,
+      "Japanese Wagyu A5 Ribeye Yakiniku Cut (100 gr)": 35000,
+      "Japanese Wagyu A5 Ribeye Slice Cut (200 gr)": 560000,
+      "Japanese Wagyu A5 Ribeye Slice Cut (100 gr)": 299000,
+      "Japanese Wagyu A5 Sirloin Yakiniku Cut (200 gr)": 660000,
+      "Japanese Wagyu A5 Sirloin Yakiniku Cut (100 gr)": 350000,
+      "Japanese Wagyu A5 Sirloin Slice Cut (200 gr)": 560000,
+      "Japanese Wagyu A5 Sirloin Slice Cut (100 gr)": 299000,
+      "Japanese Wagyu A5 Shortplate Slice Cut (200 gr)": 199000,
+      "Japanese Wagyu A5 Shortplate Slice Cut (100 gr)": 119000,
+      "Japanese Wagyu A5 Budget Bundle": 499000,
+      "Japanese Wagyu A5 Slice Bundle": 799000
+      // Steak Cuts and other items are excluded for flexibility
+    };
+
+    const productOptions = `
+      <option value="">-- Pilih Produk --</option>
+      ${Object.keys(productPrices).map(p => `<option value="${p}">${p}</option>`).join('')}
+      <option value="Japanese Wagyu A5 Ribeye Steak Cut">Japanese Wagyu A5 Ribeye Steak Cut</option>
+      <option value="Japanese Wagyu A5 Ribeye Yakiniku Cut (200 gr)">Japanese Wagyu A5 Ribeye Yakiniku Cut (200 gr)</option>
+      <option value="Japanese Wagyu A5 Ribeye Yakiniku Cut (100 gr)">Japanese Wagyu A5 Ribeye Yakiniku Cut (100 gr)</option>
+      <option value="Japanese Wagyu A5 Ribeye Slice Cut (200 gr)">Japanese Wagyu A5 Ribeye Slice Cut (200 gr)</option>
+      <option value="Japanese Wagyu A5 Ribeye Slice Cut (100 gr)">Japanese Wagyu A5 Ribeye Slice Cut (100 gr)</option>
+      <option value="Japanese Wagyu A5 Sirloin Steak Cut">Japanese Wagyu A5 Sirloin Steak Cut</option>
+      <option value="Japanese Wagyu A5 Sirloin Yakiniku Cut (200 gr)">Japanese Wagyu A5 Sirloin Yakiniku Cut (200 gr)</option>
+      <option value="Japanese Wagyu A5 Sirloin Yakiniku Cut (100 gr)">Japanese Wagyu A5 Sirloin Yakiniku Cut (100 gr)</option>
+      <option value="Japanese Wagyu A5 Sirloin Slice Cut (200 gr)">Japanese Wagyu A5 Sirloin Slice Cut (200 gr)</option>
+      <option value="Japanese Wagyu A5 Sirloin Slice Cut (100 gr)">Japanese Wagyu A5 Sirloin Slice Cut (100 gr)</option>
+      <option value="Japanese Wagyu A5 Shortplate Slice Cut (200 gr)">Japanese Wagyu A5 Shortplate Slice Cut (200 gr)</option>
+      <option value="Japanese Wagyu A5 Shortplate Slice Cut (100 gr)">Japanese Wagyu A5 Shortplate Slice Cut (100 gr)</option>
+      <option value="Japanese Wagyu A5 Budget Bundle">Japanese Wagyu A5 Budget Bundle</option>
+      <option value="Japanese Wagyu A5 Slice Bundle">Japanese Wagyu A5 Slice Bundle</option>
+      <option value="Ongkir Sameday">Ongkir Sameday</option>
+      <option value="Ongkir Instant">Ongkir Instant</option>
+      <option value="Ongkir Nextday">Ongkir Nextday</option>
+    `;
+
+    function addProductRow() {
+      const container = document.getElementById('products-container');
+      const row = document.createElement('div');
+      row.className = 'product-row';
+      row.innerHTML = `
+        <select name="product_name[]" class="product-select" required>${productOptions}</select>
+        <input type="number" name="qty[]" placeholder="Qty" required>
+        <input type="number" name="price[]" placeholder="Harga Satuan" required>
+        <button type="button" onclick="removeRow(this)">Hapus</button>
+      `;
+      container.appendChild(row);
+    }
+
+    function autofillPrice(selectElement) {
+      const selected = selectElement.value;
+      const priceInput = selectElement.nextElementSibling.nextElementSibling;
+      if (productPrices[selected] !== undefined) {
+        priceInput.value = productPrices[selected];
+      } else {
+        priceInput.value = '';
+      }
+    }
+
+    function removeRow(button) {
+      const container = document.getElementById('products-container');
+      const rows = container.querySelectorAll('.product-row');
+      
+      if (rows.length <= 1) {
+        alert("Minimal 1 produk harus ada.");
+        return;
+      }
+
+      const row = button.parentElement;
+      row.remove();
+    }
+
+    // Auto-attach price logic to the first default row
+    document.getElementById('products-container').addEventListener('change', function (e) {
+      if (e.target.classList.contains('product-select')) {
+        autofillPrice(e.target);
+      }
+    });
+  </script>
+</body>
+</html>
